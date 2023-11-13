@@ -1,0 +1,54 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+actor Client
+
+title Circuit Breaker sequence
+
+group Success
+
+Client -> Server: POST /reservation
+activate Server
+Server -> "Unstable Service": POST /reservation
+activate "Unstable Service"
+"Unstable Service" -> Server: 200 Response
+deactivate "Unstable Service"
+Server -> Client: Response
+deactivate Server
+
+end
+|||
+
+group Failure
+
+Client -> Server: POST /reservation
+activate Server
+Server -> "Unstable Service": POST /reservation
+activate "Unstable Service"
+"Unstable Service" --[#red]x Server: Error
+deactivate "Unstable Service"
+Server -> FailedBookings: POST /reservation
+activate "FailedBookings"
+FailedBookings -> Server: 200 Response
+deactivate FailedBookings
+deactivate Server
+Server -> Client: 200 Response
+
+end
+
+|||
+... N minutes later ...
+|||
+
+group Reset
+
+Client -> Server: POST /reservation
+activate Server
+Server -> "Unstable Service": POST /reservation
+activate "Unstable Service"
+"Unstable Service" -> Server: 200 Response
+deactivate "Unstable Service"
+Server -> Client: Response
+deactivate Server
+end
+@enduml

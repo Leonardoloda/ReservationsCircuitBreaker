@@ -1,0 +1,22 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  service:
+    build:
+      context: ./packages/UnstableService/
+    environment:
+      - UNSTABLE_SERVICE_PORT=8080
+    ports:
+      - "8080:8080"
+  server:
+    build:
+      context: ./packages/Server/
+    environment:
+      - CIRCUIT_BREAKER_URL=amqp://localhost
+      - CIRCUIT_BREAKER_QUEUE=FailedBookings
+      - SERVER_SERVICE_PORT=8090
+    ports:
+      - "8090:8090"
